@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { CABIN_MAP } from "@/lib/api/flights";
 
 type TripType = "return" | "one-way" | "multi-city";
 
@@ -17,6 +19,8 @@ const PRODUCTS = [
 ];
 
 export default function FlightsPage() {
+  const router = useRouter();
+
   const [tripType, setTripType] = useState<TripType>("return");
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
@@ -24,10 +28,38 @@ export default function FlightsPage() {
   const [returnDate, setReturnDate] = useState("");
   const [passengers, setPassengers] = useState(1);
   const [cabin, setCabin] = useState("Economy");
+  const [error, setError] = useState("");
 
-  function handleSearch(e: React.FormEvent) {
+  function handleSearch(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    // Milestone 2: wire to Amadeus API
+    setError("");
+
+    if (!origin.trim() || origin.trim().length < 3) {
+      setError("Please enter a valid origin airport code (e.g. TLV)");
+      return;
+    }
+    if (!destination.trim() || destination.trim().length < 3) {
+      setError("Please enter a valid destination airport code (e.g. LHR)");
+      return;
+    }
+    if (!departDate) {
+      setError("Please select a departure date");
+      return;
+    }
+
+    const params = new URLSearchParams({
+      origin: origin.trim().toUpperCase(),
+      destination: destination.trim().toUpperCase(),
+      departure_date: departDate,
+      adults: String(passengers),
+      cabin: CABIN_MAP[cabin] ?? "ECONOMY",
+    });
+
+    if (tripType === "return" && returnDate) {
+      params.set("return_date", returnDate);
+    }
+
+    router.push(`/flights/results?${params.toString()}`);
   }
 
   return (
@@ -82,30 +114,32 @@ export default function FlightsPage() {
 
           {/* From / To */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="relative">
+            <div>
               <label className="block text-xs text-gray-400 mb-1 ml-1">From</label>
               <div className="flex items-center border border-gray-200 rounded-xl px-4 py-3 focus-within:border-brand-500 focus-within:ring-1 focus-within:ring-brand-500">
                 <span className="text-gray-400 mr-3">✈️</span>
                 <input
                   type="text"
-                  placeholder="City or airport"
+                  placeholder="Airport code (e.g. TLV)"
                   value={origin}
-                  onChange={(e) => setOrigin(e.target.value)}
-                  className="flex-1 outline-none text-gray-800 text-sm bg-transparent"
+                  onChange={(e) => setOrigin(e.target.value.toUpperCase())}
+                  maxLength={3}
+                  className="flex-1 outline-none text-gray-800 text-sm bg-transparent uppercase"
                 />
               </div>
             </div>
 
-            <div className="relative">
+            <div>
               <label className="block text-xs text-gray-400 mb-1 ml-1">To</label>
               <div className="flex items-center border border-gray-200 rounded-xl px-4 py-3 focus-within:border-brand-500 focus-within:ring-1 focus-within:ring-brand-500">
                 <span className="text-gray-400 mr-3">🛬</span>
                 <input
                   type="text"
-                  placeholder="City or airport"
+                  placeholder="Airport code (e.g. LHR)"
                   value={destination}
-                  onChange={(e) => setDestination(e.target.value)}
-                  className="flex-1 outline-none text-gray-800 text-sm bg-transparent"
+                  onChange={(e) => setDestination(e.target.value.toUpperCase())}
+                  maxLength={3}
+                  className="flex-1 outline-none text-gray-800 text-sm bg-transparent uppercase"
                 />
               </div>
             </div>
@@ -118,6 +152,7 @@ export default function FlightsPage() {
               <input
                 type="date"
                 value={departDate}
+                min={new Date().toISOString().split("T")[0]}
                 onChange={(e) => setDepartDate(e.target.value)}
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
               />
@@ -129,6 +164,7 @@ export default function FlightsPage() {
                 <input
                   type="date"
                   value={returnDate}
+                  min={departDate || new Date().toISOString().split("T")[0]}
                   onChange={(e) => setReturnDate(e.target.value)}
                   className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                 />
@@ -165,6 +201,11 @@ export default function FlightsPage() {
               </select>
             </div>
           </div>
+
+          {/* Validation error */}
+          {error && (
+            <p className="text-sm text-red-500 bg-red-50 px-4 py-2 rounded-lg">{error}</p>
+          )}
 
           {/* Search button */}
           <button

@@ -47,6 +47,12 @@ class Settings(BaseSettings):
     amadeus_client_secret: str = ""
     amadeus_base_url: str = "https://test.api.amadeus.com"
 
+    # ─── ALP (Flight Provider) ────────────────────────────
+    alp_client_id: str = ""
+    alp_client_secret: str = ""
+    alp_token_url: str = "https://login.alp.co.il/auth/realms/ALP/protocol/openid-connect/token"
+    alp_listener_url: str = "https://alp.co.il/Json/listener.php"
+
     # ─── Kaspi Pay ────────────────────────────────────────
     kaspi_api_key: str = ""
     kaspi_webhook_secret: str = ""

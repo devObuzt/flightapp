@@ -4,14 +4,20 @@ from app.core.config import settings
 _redis: Redis | None = None
 
 
-async def get_redis() -> Redis:
+async def get_redis() -> Redis | None:
     global _redis
     if _redis is None:
-        _redis = await from_url(
-            settings.redis_url,
-            encoding="utf-8",
-            decode_responses=True,
-        )
+        try:
+            _redis = await from_url(
+                settings.redis_url,
+                encoding="utf-8",
+                decode_responses=True,
+                socket_connect_timeout=2,
+            )
+            await _redis.ping()
+        except Exception:
+            print("⚠️  Redis not available — running without cache/sessions")
+            _redis = None
     return _redis
 
 
