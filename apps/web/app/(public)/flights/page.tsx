@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CABIN_MAP } from "@/lib/api/flights";
+import AirportInput from "@/components/AirportInput";
 
 type TripType = "return" | "one-way" | "multi-city";
 
@@ -34,12 +35,12 @@ export default function FlightsPage() {
     e.preventDefault();
     setError("");
 
-    if (!origin.trim() || origin.trim().length < 3) {
-      setError("Please enter a valid origin airport code (e.g. TLV)");
+    if (!origin.trim()) {
+      setError("Please select a departure airport");
       return;
     }
-    if (!destination.trim() || destination.trim().length < 3) {
-      setError("Please enter a valid destination airport code (e.g. LHR)");
+    if (!destination.trim()) {
+      setError("Please select a destination airport");
       return;
     }
     if (!departDate) {
@@ -114,35 +115,20 @@ export default function FlightsPage() {
 
           {/* From / To */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs text-gray-400 mb-1 ml-1">From</label>
-              <div className="flex items-center border border-gray-200 rounded-xl px-4 py-3 focus-within:border-brand-500 focus-within:ring-1 focus-within:ring-brand-500">
-                <span className="text-gray-400 mr-3">✈️</span>
-                <input
-                  type="text"
-                  placeholder="Airport code (e.g. TLV)"
-                  value={origin}
-                  onChange={(e) => setOrigin(e.target.value.toUpperCase())}
-                  maxLength={3}
-                  className="flex-1 outline-none text-gray-800 text-sm bg-transparent uppercase"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs text-gray-400 mb-1 ml-1">To</label>
-              <div className="flex items-center border border-gray-200 rounded-xl px-4 py-3 focus-within:border-brand-500 focus-within:ring-1 focus-within:ring-brand-500">
-                <span className="text-gray-400 mr-3">🛬</span>
-                <input
-                  type="text"
-                  placeholder="Airport code (e.g. LHR)"
-                  value={destination}
-                  onChange={(e) => setDestination(e.target.value.toUpperCase())}
-                  maxLength={3}
-                  className="flex-1 outline-none text-gray-800 text-sm bg-transparent uppercase"
-                />
-              </div>
-            </div>
+            <AirportInput
+              label="From"
+              placeholder="City, airport or code"
+              value={origin}
+              onChange={setOrigin}
+              icon="✈️"
+            />
+            <AirportInput
+              label="To"
+              placeholder="City, airport or code"
+              value={destination}
+              onChange={setDestination}
+              icon="🛬"
+            />
           </div>
 
           {/* Dates / Passengers / Cabin */}

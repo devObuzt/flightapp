@@ -8,10 +8,10 @@ import '../../features/auth/providers/auth_provider.dart';
 import '../../features/shell/app_shell.dart';
 import '../../features/agent/screens/agent_screen.dart';
 import '../../features/flights/screens/flight_search_screen.dart';
+import '../../features/flights/screens/flight_results_screen.dart';
 import '../../features/bookings/screens/bookings_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 
-// Routes that require the user to be logged in
 const _protectedRoutes = ['/bookings', '/profile'];
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -22,22 +22,24 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final isAuthenticated = authState.valueOrNull != null;
       final loc = state.matchedLocation;
-      final isAuthRoute =
-          loc.startsWith('/login') || loc.startsWith('/register');
+      final isAuthRoute = loc.startsWith('/login') || loc.startsWith('/register');
       final isProtected = _protectedRoutes.any((r) => loc.startsWith(r));
-
-      // Send unauthenticated users to login only for protected routes
       if (!isAuthenticated && isProtected) return '/login';
-      // Already logged in → skip auth screens
       if (isAuthenticated && isAuthRoute) return '/flights';
       return null;
     },
     routes: [
-      // ─── Auth ─────────────────────────────────────────
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
       GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
 
-      // ─── App Shell (bottom tabs) ──────────────────────
+      // Results — outside shell (full screen)
+      GoRoute(
+        path: '/flights/results',
+        builder: (_, state) => FlightResultsScreen(
+          params: (state.extra as Map<String, dynamic>?) ?? {},
+        ),
+      ),
+
       ShellRoute(
         builder: (context, state, child) => AppShell(child: child),
         routes: [

@@ -52,6 +52,7 @@ class Settings(BaseSettings):
     alp_client_secret: str = ""
     alp_token_url: str = "https://login.alp.co.il/auth/realms/ALP/protocol/openid-connect/token"
     alp_listener_url: str = "https://alp.co.il/Json/listener.php"
+    alp_booking_url: str = "https://alp.co.il/newBooking"
 
     # ─── Kaspi Pay ────────────────────────────────────────
     kaspi_api_key: str = ""
